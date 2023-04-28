@@ -301,7 +301,6 @@ def parse_arguments():
 
 # TODO: fill in llm values here
 # check_openai_api_key()
-cfg = Config()
 logger = configure_logging()
 parse_arguments()
 ai_name = ""
