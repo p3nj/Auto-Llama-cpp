@@ -20,14 +20,17 @@ import argparse
 import logging
 
 cfg = Config()
+ai_name = ""
+
 
 def configure_logging():
     logging.basicConfig(filename='log.txt',
-                    filemode='a',
-                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                    datefmt='%H:%M:%S',
-                    level=logging.DEBUG)
+                        filemode='a',
+                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.DEBUG)
     return logging.getLogger('AutoGPT')
+
 
 # def check_openai_api_key():
 #     """Check if the OpenAI API key is set in config.py or as an environment variable."""
@@ -156,31 +159,25 @@ def load_variables(config_file="config.yaml"):
 
     if not ai_goals:
         print("Enter up to 5 goals for your AI: ")
-        print("For example: \nIncrease net worth, Grow Twitter Account, Develop and manage multiple businesses autonomously'")
+        print(
+            "For example: \nIncrease net worth, Grow Twitter Account, Develop and manage multiple businesses autonomously'")
         print("Enter nothing to load defaults, enter nothing when finished.")
         ai_goals = []
         for i in range(5):
-            ai_goal = utils.clean_input(f"Goal {i+1}: ")
+            ai_goal = utils.clean_input(f"Goal {i + 1}: ")
             if ai_goal == "":
                 break
             ai_goals.append(ai_goal)
         if len(ai_goals) == 0:
-            ai_goals = ["Increase net worth", "Grow Twitter Account", "Develop and manage multiple businesses autonomously"]
+            ai_goals = ["Increase net worth", "Grow Twitter Account",
+                        "Develop and manage multiple businesses autonomously"]
 
     # Save variables to yaml file
     config = {"ai_name": ai_name, "ai_role": ai_role, "ai_goals": ai_goals}
     with open(config_file, "w") as file:
         documents = yaml.dump(config, file)
 
-    prompt = data.load_prompt()
-    prompt_start = """Your decisions must always be made independently without seeking user assistance. Play to your strengths as an LLM and pursue simple strategies with no legal complications."""
-
-    # Construct full prompt
-    full_prompt = f"You are {ai_name}, {ai_role}\n{prompt_start}\n\nGOALS:\n\n"
-    for i, goal in enumerate(ai_goals):
-        full_prompt += f"{i+1}. {goal}\n"
-
-    full_prompt += f"\n\n{prompt}"
+    full_prompt = config.construct_full_prompt()
     return full_prompt
 
 
@@ -255,7 +252,7 @@ def prompt_user():
     print("Enter nothing to load defaults, enter nothing when finished.", flush=True)
     ai_goals = []
     for i in range(5):
-        ai_goal = utils.clean_input(f"{Fore.LIGHTBLUE_EX}Goal{Style.RESET_ALL} {i+1}: ")
+        ai_goal = utils.clean_input(f"{Fore.LIGHTBLUE_EX}Goal{Style.RESET_ALL} {i + 1}: ")
         if ai_goal == "":
             break
         ai_goals.append(ai_goal)
@@ -265,6 +262,7 @@ def prompt_user():
 
     config = AIConfig(ai_name, ai_role, ai_goals)
     return config
+
 
 def parse_arguments():
     """Parses the arguments passed to the script"""
@@ -299,11 +297,11 @@ def parse_arguments():
         print_to_console("Fast LLM: ", Fore.GREEN, "ENABLED")
         cfg.set_smart_llm_model(cfg.fast_llm_model)
 
+
 # TODO: fill in llm values here
 # check_openai_api_key()
 logger = configure_logging()
 parse_arguments()
-ai_name = ""
 prompt = construct_prompt()
 # print(prompt)
 # Initialize variables
@@ -326,8 +324,7 @@ while True:
             prompt,
             user_input,
             full_message_history,
-            memory,
-            cfg.fast_token_limit) # TODO: This hardcodes the model to use the fast llm. Make this an argument
+            memory)  # TODO: This hardcodes the model to use the fast llm. Make this an argument
 
     # Print Assistant thoughts
     print_assistant_thoughts(assistant_reply)
@@ -373,9 +370,9 @@ while True:
 
         if user_input == "GENERATE NEXT COMMAND JSON":
             print_to_console(
-            "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=",
-            Fore.MAGENTA,
-            "")
+                "-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-=",
+                Fore.MAGENTA,
+                "")
         elif user_input == "EXIT":
             print("Exiting...", flush=True)
             break
@@ -387,7 +384,7 @@ while True:
             f"COMMAND = {Fore.CYAN}{command_name}{Style.RESET_ALL}  ARGUMENTS = {Fore.CYAN}{arguments}{Style.RESET_ALL}")
 
     # Execute command
-    if command_name.lower().startswith( "error" ):
+    if command_name.lower().startswith("error"):
         result = f"Command {command_name} threw the following error: " + arguments
     elif command_name == "human_feedback":
         result = f"Human feedback: {user_input}"
@@ -412,4 +409,3 @@ while True:
             chat.create_chat_message(
                 "system", "Unable to execute command"))
         print_to_console("SYSTEM: ", Fore.YELLOW, "Unable to execute command")
-

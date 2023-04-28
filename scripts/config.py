@@ -68,6 +68,9 @@ class Config(metaclass=Singleton):
 
         self.EMBED_DIM = int(os.getenv("EMBED_DIM"))
 
+        self.n_ctx = int(os.getenv("N_CTX"))
+        self.temperature = float(os.getenv("TEMPERATURE"))
+
     def set_continuous_mode(self, value: bool):
         """Set the continuous mode value."""
         self.continuous_mode = value
@@ -114,7 +117,3 @@ class Config(metaclass=Singleton):
     def set_pinecone_region(self, value: str):
         """Set the Pinecone region value."""
         self.pinecone_region = value
-
-    def set_debug_mode(self, value: bool):
-        """Set the debug mode value."""
-        self.debug = value
